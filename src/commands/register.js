@@ -2,13 +2,13 @@ const api = require('../api');
 
 module.exports = {
     name: 'register',
-    description: 'Assigns a user a server role based on their current seasons ADR if they have played at least 25 games this season. Otherwise, it uses the last season\'s ADR.',
+    description: 'Assigns a user a server role based on their current seasons ADR if they have played at least 20 games this season. Otherwise, it uses the last season\'s ADR.',
     execute: async (message, args) => {
         const gamertag = args[0];
         const adr = await api.getSeasonADR(gamertag);
 
         if (adr === null) {
-            message.reply('You must have played at least 25 rounds of TPP squad in order to be assigned a role.');
+            message.reply('You must have played at least 20 rounds of TPP squad this season in order to be assigned a role.');
         } else {
             let roleName = ""; 
             const pre = Math.floor(adr / 100) * 100;
