@@ -15,8 +15,8 @@ const getPlayerId = async (playerName) => {
     const payload = await fetch(url, fetchParams)
     .then(response => {
       if (response.status === 200) { return response.json(); }
-      if (response.status === 404) { throw new Error(`No player info found for user ${playerName}`); }
-      throw new Error("API Error in getMatchInfo fetch");
+      if (response.status === 404) { console.error(`No player info found for user ${playerName}`); }
+      console.error("API Error in getMatchInfo fetch");
     })
     .then(json => {
       const playerId = get(json, "data[0].id");
@@ -32,7 +32,7 @@ const getSeasonId = async () => {
     const payload = await fetch(url, fetchParams)
     .then(response => {
         if (response.status === 200) { return response.json(); }
-        throw new Error('API Error in getSeasonsList fetch');
+        console.error('API Error in getSeasonsList fetch');
     })
     .then(json => {
         const seasonInfo = get(json, 'data');
@@ -52,7 +52,7 @@ module.exports = {
         const payload = await fetch(url, fetchParams)
         .then(response => {
           if (response.status === 200) { return response.json(); }
-          throw new Error("API Error in getSeasonsList fetch");
+          console.error("API Error in getSeasonsList fetch");
         })
         .then(json => { 
             const squadStats = json.data.attributes.gameModeStats.squad;
