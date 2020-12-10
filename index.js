@@ -19,14 +19,14 @@ client.on('message', async (message) => {
 
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-    if (message.channel.id === process.env.CHANNEL_ID) {
-        const args = message.content.slice(prefix.length).trim().split(/ +/);
+    if (message.channel.id === process.env.CHANNEL_ID || message.channel.id === process.env.TEST_CHANNEL_ID) {
+        const args = await message.content.slice(prefix.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
 
         if (!client.commands.has(command)) return;
 
         try {
-            await client.commands.get(command).execute(message, args);
+            client.commands.get(command).execute(message, args);
         } catch (error) {
             console.error(error);
             message.reply(`There was an error trying to execute the "${command}" command.`);

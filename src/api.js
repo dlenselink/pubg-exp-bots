@@ -10,6 +10,10 @@ const fetchParams = {
     }
 };
 
+/**
+ * Uses a player's gamertag to look up their PUBG user id.
+ * @param {string} playerName - The user's gamertag, exactly as it appears in PUBG.
+ */
 const getPlayerId = async (playerName) => {
     const url = "https://api.pubg.com/shards/steam/players?filter[playerNames]=" + playerName;
     const payload = await fetch(url, fetchParams)
@@ -27,6 +31,9 @@ const getPlayerId = async (playerName) => {
     return payload;
 };
 
+/**
+ * Gets a season list and returns the id of the current season.
+ */
 const getSeasonId = async () => {
     const url = 'https://api.pubg.com/shards/steam/seasons';
     const payload = await fetch(url, fetchParams)
@@ -45,28 +52,52 @@ const getSeasonId = async () => {
 };
 
 module.exports = {
+    /**
+     * Looks up a player's stats, calculates their ADR, then assigns a role based on their ADR.
+     * @param {string} playerName - The user's gamertag, exactly as it appears in PUBG.
+     */
     getSeasonADR: async (playerName) => {
-        const player = await getPlayerId(playerName);
         const season = await getSeasonId();
+        const player = await getPlayerId(playerName);
         const url = "https://api.pubg.com/shards/steam/players/" + player + "/seasons/" + season;
         const payload = await fetch(url, fetchParams)
         .then(response => {
             if (response.status === 200) { return response.json(); }
             console.error("API Error in getSeasonsList fetch");
         })
-        .then(json => { 
-            const squadStats = json.data.attributes.gameModeStats.squad;
-            const totalRounds = squadStats.roundsPlayed;
+        .then(json => {
+            const tppStats = json.data.attributes.gameModeStats['squad'];
+            const fppStats = json.data.attributes.gameModeStats['squad-fpp'];
+            const tppRounds = parseInt(tppStats.roundsPlayed);
+            const fppRounds = parseInt(fppStats.roundsPlayed);
+            const minimum = parseInt(process.env.MINIMUM_ROUNDS_PLAYED);
 
-            if (totalRounds < parseInt(process.env.MINIMUM_ROUNDS_PLAYED)) {
-                return null;
-            } else {
-                const totalDamage = squadStats.damageDealt;
-                return Math.round(parseInt(totalDamage) / parseInt(totalRounds));
+            if ((tppRounds > 0 && tppRounds > minimum) || (fppRounds > 0 && fppRounds > minimum)) {
+                const tppDamage = parseInt(tppStats.damageDealt);
+                const fppDamage = parseInt(fppStats.damageDealt);
+                let tppAdr = null;
+                let fppAdr = null;
+
+                if (tppRounds > 0) tppAdr = tppDamage / tppRounds;
+                if (fppRounds > 0) fppAdr = fppDamage / fppRounds;
+
+                if (tppAdr && !fppAdr) {
+                    return { adr: tppAdr, mode: 'tpp' };
+                } else if (!tppAdr && fppAdr) {
+                    return { adr: fppAdr, mode: 'fpp' };
+                } else if (tppAdr && fppAdr) {
+                    if (tppAdr > fppAdr) {
+                        return { adr: tppAdr, mode: 'tpp' };
+                    } else {
+                        return { adr: fppAdr, mode: 'fpp' };
+                    }
+                }
             }
+
+            return null;
         })
         .catch(error => console.error(error));
-        
+
         return payload;
     },
-}
+};
