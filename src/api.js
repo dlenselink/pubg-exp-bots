@@ -1,7 +1,6 @@
-const fetch = require('node-fetch');
 const findIndex = require('lodash/findIndex');
 const get = require('lodash/get');
-const { result } = require('lodash');
+const fetch = require('node-fetch');
 const fetchParams = {
     method: 'GET',
     headers: {
@@ -80,15 +79,9 @@ module.exports = {
                 fppAdr = fppDamage / fppRounds;
             }
 
-            if (tppAdr && !fppAdr) {
-                return { adr: tppAdr, mode: 'tpp' };
-            } else if (!tppAdr && fppAdr) {
-                return { adr: fppAdr, mode: 'fpp' };
-            } else if (tppAdr && fppAdr) {
-                if (tppAdr > fppAdr) return { adr: tppAdr, mode: 'tpp' };
-                return { adr: fppAdr, mode: 'fpp' };
-            }
-                
+            if (tppAdr && !fppAdr) return { adr: tppAdr, mode: 'tpp' };
+            else if (!tppAdr && fppAdr) return { adr: fppAdr, mode: 'fpp' };
+            else if (tppAdr && fppAdr) return (tppAdr > fppAdr) ? { adr: tppAdr, mode: 'tpp' } : { adr: fppAdr, mode: 'fpp' };
             return null;
         })
         .catch(error => console.error(error));

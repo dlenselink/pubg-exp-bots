@@ -37,7 +37,7 @@ module.exports = {
 
                 const newRoles = [];
                 const newAdrRole = await message.guild.roles.cache.find(role => role.name === name);
-                const newModeRole =  await message.guild.roles.cache.find(role => role.name === stats.mode.toUpperCase());
+                const newModeRole = await message.guild.roles.cache.find(role => role.name === stats.mode.toUpperCase());
 
                 if (newAdrRole) newRoles.push(newAdrRole);
                 if (newModeRole) newRoles.push(newModeRole);

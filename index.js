@@ -16,13 +16,10 @@ client.once('ready', () => {
 
 client.on('message', async (message) => {
     const prefix = process.env.COMMAND_PREFIX;
-
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
-
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
     if (message.channel.id === process.env.CHANNEL_ID || message.channel.id === process.env.TEST_CHANNEL_ID) {
         const args = await message.content.slice(prefix.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
-
         if (!client.commands.has(command)) return;
 
         try {
