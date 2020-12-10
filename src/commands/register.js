@@ -10,38 +10,44 @@ module.exports = {
      */
     execute: async (message, args) => {
         const gamertag = args[0];
-        const stats = await api.getSeasonADR(gamertag);
-        
-        if (stats === null) {
-            await message.reply('to receive a role, your name must appear exactly as it does in-game AND you must have played at least 20 squad matches (fpp or tpp) this season.');
-        } else {
-            const oldRoles = [];
-            const adrRole = await message.member.roles.cache.find(r => r.name.includes('ADR'));
-            const tppRole = await message.member.roles.cache.find(r => r.name === 'TPP');
-            const fppRole = await message.member.roles.cache.find(r => r.name === 'FPP');
+        const regex = /^[a-zA-Z0-9-_]+$/;
 
-            if (adrRole) oldRoles.push(adrRole);
-            if (tppRole) oldRoles.push(tppRole);
-            if (fppRole) oldRoles.push(fppRole);
-            if (oldRoles) await message.member.roles.remove(oldRoles);
+        if (regex.test(gamertag)) {
+            const stats = await api.getSeasonADR(gamertag);
             
-            let name = "";
-            const pre = Math.floor(Math.round(stats.adr) / 100) * 100;
+            if (stats === null) {
+                await message.reply('to receive a role, your name must appear exactly as it does in-game AND you must have played at least 20 squad matches (fpp or tpp) this season.');
+            } else {
+                const oldRoles = [];
+                const adrRole = await message.member.roles.cache.find(r => r.name.includes('ADR'));
+                const tppRole = await message.member.roles.cache.find(r => r.name === 'TPP');
+                const fppRole = await message.member.roles.cache.find(r => r.name === 'FPP');
 
-            if (stats.adr > 0 && stats.adr < 100) name = '0-100 ADR';
-            else if (stats.adr > 500) name = '500+ ADR';
-            else name = `${pre}+ ADR`;
+                if (adrRole) oldRoles.push(adrRole);
+                if (tppRole) oldRoles.push(tppRole);
+                if (fppRole) oldRoles.push(fppRole);
+                if (oldRoles) await message.member.roles.remove(oldRoles);
+                
+                let name = "";
+                const pre = Math.floor(Math.round(stats.adr) / 100) * 100;
 
-            const newRoles = [];
-            const newAdrRole = await message.guild.roles.cache.find(role => role.name === name);
-            const newModeRole =  await message.guild.roles.cache.find(role => role.name === stats.mode.toUpperCase());
+                if (stats.adr > 0 && stats.adr < 100) name = '0-100 ADR';
+                else if (stats.adr > 500) name = '500+ ADR';
+                else name = `${pre}+ ADR`;
 
-            if (newAdrRole) newRoles.push(newAdrRole);
-            if (newModeRole) newRoles.push(newModeRole);
-            if (newRoles) {
-                message.member.roles.add(newRoles);
-                message.reply(`you were assigned the ${name} role for ${stats.mode.toUpperCase()}`);
+                const newRoles = [];
+                const newAdrRole = await message.guild.roles.cache.find(role => role.name === name);
+                const newModeRole =  await message.guild.roles.cache.find(role => role.name === stats.mode.toUpperCase());
+
+                if (newAdrRole) newRoles.push(newAdrRole);
+                if (newModeRole) newRoles.push(newModeRole);
+                if (newRoles) {
+                    message.member.roles.add(newRoles);
+                    message.reply(`you were assigned the ${name} role for ${stats.mode.toUpperCase()}`);
+                }
             }
+        } else {
+            message.reply('your name must appear exactly as it does in-game. Only letters, numbers, dashes, and underscores are allowed.');
         }
     },
 };
